@@ -12,9 +12,17 @@ contract DoneRegistry {
         escrows.push(escrow);
     }
 
-    function flush() public {
+    function flush() public returns (bool) {
+        uint256 length = escrows.length;
+        if (length == 0) return false; // Early return if array is empty
         for (uint256 i = 0; i < escrows.length; i++) {
             IEscrow(escrows[i]).withdraw();
         }
+        delete escrows;
+        return true;
+    }
+
+    function getEscrowCount() public view returns (uint256) {
+        return escrows.length;
     }
 }

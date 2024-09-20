@@ -38,7 +38,7 @@ contract EscrowFactory {
 
     function createEscrow(uint256 amount, address token, uint256 orderId) external returns (Escrow) {
         console.log(admin);
-        Escrow escrow = new Escrow(msg.sender, token, admin,registry);
+        Escrow escrow = new Escrow(msg.sender, token, admin, registry);
         escrows.push(escrow);
         escrowsMap[orderId] = address(escrow);
 
@@ -69,7 +69,11 @@ contract EscrowFactory {
         Escrow(escrow).addSeller(msg.sender);
     }
 
-    function getAllEscrow() public view returns (Escrow[] memory escrows) {
-        return escrows;
+    function getAllEscrow() public view returns (address[] memory) {
+        address[] memory escrowsArr = new address[](escrows.length);
+        for (uint256 i = 0; i < escrows.length; i++) {
+            escrowsArr[i] = address(escrows[i]);
+        }
+        return escrowsArr;
     }
 }

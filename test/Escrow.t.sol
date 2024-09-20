@@ -58,6 +58,8 @@ contract EscrowTest is Test {
 
         registry.flush();
 
+        assertEq(registry.getEscrowCount(), 0);
+
         assertEq(IERC20(USDC).balanceOf(ADMIN), 5_000_000);
     }
 }
