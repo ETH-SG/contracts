@@ -10,7 +10,8 @@ contract EscrowFactory {
     mapping(uint256 => address) public escrowsMap;
 
     string companyName;
-    address public admin;
+    address internal admin;
+    address internal registry;
 
     event EscrowCreated(address indexed escrow);
 
@@ -29,14 +30,15 @@ contract EscrowFactory {
         _;
     }
 
-    constructor(string memory name, address _admin) {
+    constructor(string memory name, address _admin, address _registry) {
         companyName = name;
         admin = _admin;
+        registry = _registry;
     }
 
     function createEscrow(uint256 amount, address token, uint256 orderId) external returns (Escrow) {
         console.log(admin);
-        Escrow escrow = new Escrow(msg.sender, token, admin);
+        Escrow escrow = new Escrow(msg.sender, token, admin,registry);
         escrows.push(escrow);
         escrowsMap[orderId] = address(escrow);
 
@@ -59,7 +61,7 @@ contract EscrowFactory {
         Escrow(escrow).changeStatus(Escrow.Status.RELEASE);
     }
 
-    function changeEscrowStateDispute(address escrow) external CheckBeforeRelease(escrow){
+    function changeEscrowStateDispute(address escrow) external CheckBeforeRelease(escrow) {
         Escrow(escrow).changeStatus(Escrow.Status.DISPUTE);
     }
 
@@ -67,7 +69,7 @@ contract EscrowFactory {
         Escrow(escrow).addSeller(msg.sender);
     }
 
-    function getAllEscrow() public view returns (Escrow[] memory escrows){
+    function getAllEscrow() public view returns (Escrow[] memory escrows) {
         return escrows;
     }
 }

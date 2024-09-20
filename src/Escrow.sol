@@ -3,6 +3,7 @@ pragma solidity ^0.8.19;
 
 import {console} from "forge-std/Test.sol";
 import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";
+import {IDoneRegistry} from "../src/interface/IDoneRegistry.sol";
 
 contract Escrow {
     enum Status {
@@ -14,8 +15,11 @@ contract Escrow {
     }
 
     address immutable buyer;
+    address immutable admin;
     address immutable token;
     address public seller;
+
+    IDoneRegistry public registry;
 
     Status public state;
 
@@ -24,7 +28,6 @@ contract Escrow {
     event Withdrawn(address indexed company, uint256 companyAmount, address indexed seller, uint256 sellerAmount);
 
     modifier CheckAdminOrRunner() {
-        console.log(msg.sender);
         // if its admin or runner calling this then we can allow them to call
         require(adminMap[msg.sender] == true, "YOU ARE NOT ADMIN");
         _;
@@ -35,19 +38,21 @@ contract Escrow {
         _;
     }
 
-    constructor(address user, address _token, address admin) {
+    constructor(address user, address _token, address _admin, address _registry) {
         buyer = user;
         token = _token;
-        adminMap[admin] = true;
+        registry = IDoneRegistry(_registry);
+        admin = _admin;
+        adminMap[_admin] = true;
+        adminMap[_registry] = true;
         state = Status.PENDING;
-       
     }
 
     function addAdmin(address admin) external {
         adminMap[admin] = true;
     }
 
-    function withdraw() external CheckAdminOrRunner() {
+    function withdraw() external CheckAdminOrRunner {
         console.log(token);
         // Get the current balance of the contract
         uint256 balance = IERC20(token).balanceOf(address(this));
@@ -59,7 +64,7 @@ contract Escrow {
         uint256 driverShare = balance - companyShare; // Remainder for the driver
 
         // Transfer the company's share
-        require(IERC20(token).transfer(msg.sender, companyShare), "Company transfer failed");
+        require(IERC20(token).transfer(admin, companyShare), "Company transfer failed");
 
         // Transfer the driver's share
         require(IERC20(token).transfer(seller, driverShare), "Driver transfer failed");
@@ -72,11 +77,12 @@ contract Escrow {
         seller = _seller;
     }
 
-    function done() external SellerChecker(){
+    function done() external SellerChecker {
+        registry.addToRegistry(address(this));
         state = Status.FINISH;
     }
 
-    function confirm() external SellerChecker() {
+    function confirm() external SellerChecker {
         state = Status.CONFIRM;
     }
 
@@ -84,7 +90,7 @@ contract Escrow {
         state = _state;
     }
 
-    function getState() public view returns(Status state) {
+    function getState() public view returns (Status state) {
         return state;
     }
 }

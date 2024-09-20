@@ -4,11 +4,13 @@ pragma solidity ^0.8.19;
 import {Test, console} from "forge-std/Test.sol";
 import {EscrowFactory} from "../src/EscrowFactory.sol";
 import {Escrow} from "../src/Escrow.sol";
+import {DoneRegistry} from "../src/DoneRegistry.sol";
 import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";
 
 contract EscrowTest is Test {
     EscrowFactory public escrowFactory;
     Escrow public escrow;
+    DoneRegistry public registry;
 
     address ADMIN = address(5);
     address USER = address(2);
@@ -22,13 +24,15 @@ contract EscrowTest is Test {
         vm.startPrank(ADMIN);
 
         console.log(IERC20(USDC).balanceOf(ADMIN));
-        
-        escrowFactory = new EscrowFactory("Grab", ADMIN);
+
+        registry = new DoneRegistry();
+
+        escrowFactory = new EscrowFactory("Grab", ADMIN, address(registry));
         vm.stopPrank();
         deal(USDC, USER, USDC_DEPOSIT_AMOUNT);
     }
 
-    function test_create_escrow() public {
+    function test_whole_flow() public {
         vm.startPrank(USER);
 
         //approve
@@ -52,7 +56,7 @@ contract EscrowTest is Test {
 
         vm.startPrank(ADMIN);
 
-        escrow.withdraw();
+        registry.flush();
 
         assertEq(IERC20(USDC).balanceOf(ADMIN), 5_000_000);
     }
