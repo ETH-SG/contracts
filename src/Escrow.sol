@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import {console} from "forge-std/Test.sol";
-import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IDoneRegistry} from "../src/interface/IDoneRegistry.sol";
 
 contract Escrow {
@@ -25,7 +25,12 @@ contract Escrow {
 
     mapping(address => bool) public adminMap;
 
-    event Withdrawn(address indexed company, uint256 companyAmount, address indexed seller, uint256 sellerAmount);
+    event Withdrawn(
+        address indexed company,
+        uint256 companyAmount,
+        address indexed seller,
+        uint256 sellerAmount
+    );
 
     modifier CheckAdminOrRunner() {
         // if its admin or runner calling this then we can allow them to call
@@ -38,7 +43,12 @@ contract Escrow {
         _;
     }
 
-    constructor(address user, address _token, address _admin, address _registry) {
+    constructor(
+        address user,
+        address _token,
+        address _admin,
+        address _registry
+    ) {
         buyer = user;
         token = _token;
         registry = IDoneRegistry(_registry);
@@ -64,10 +74,16 @@ contract Escrow {
         uint256 driverShare = balance - companyShare; // Remainder for the driver
 
         // Transfer the company's share
-        require(IERC20(token).transfer(admin, companyShare), "Company transfer failed");
+        require(
+            IERC20(token).transfer(admin, companyShare),
+            "Company transfer failed"
+        );
 
         // Transfer the driver's share
-        require(IERC20(token).transfer(seller, driverShare), "Driver transfer failed");
+        require(
+            IERC20(token).transfer(seller, driverShare),
+            "Driver transfer failed"
+        );
 
         // Emit an event for the withdrawal
         emit Withdrawn(msg.sender, companyShare, seller, driverShare);

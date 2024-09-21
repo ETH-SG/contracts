@@ -5,7 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {EscrowFactory} from "../src/EscrowFactory.sol";
 import {Escrow} from "../src/Escrow.sol";
 import {DoneRegistry} from "../src/DoneRegistry.sol";
-import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract EscrowTest is Test {
     EscrowFactory public escrowFactory;
